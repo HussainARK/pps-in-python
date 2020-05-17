@@ -3,51 +3,33 @@
 
 import socket, threading
 
-DISCONNECT_MESSAGE ="!DISCONNECT!"
-HEADER = 2048
-
 HOST = "127.0.0.1"
 PORT = 5050
 ADDR = (HOST, PORT)
 
+DISCONNECT_MESSAGE = "DISCONNECTPLEASE!"
+HEADER = 2048
+
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(ADDR)
 
-clients = set()
-clients_lock = threading.Lock()
-
-def handle_client(connection, address):
-    print(f"[SERVER] New Connection: {address}")
-    with clients_lock:
-        clients.add(connection)
+def handle_client(client_connection, client_address):
+    print(f"[SERVER] New Connection: {client_address}")
 
     connected = True
     while connected:
-        username = connection.recv(HEADER).decode()
-        msg = connection.recv(HEADER).decode()
-        if msg == DISCONNECT_MESSAGE:
+        message = client_connection.recv(HEADER).decode()
+        if message == DISCONNECT_MESSAGE:
             connected = False
-            with clients_lock:
-                if clients != []:
-                    for client in clients:
-                        if client:
-                            client.send(str.encode(f"[{username} DISCONNECTED]" + "\n"))
-            print(f"[{username}@{address[0]}] DISCONNECTED")
+            print(f"[{client_address}] DISCONNECTED")
         else:
-            with clients_lock:
-                for client in clients:
-                    client.send(str.encode(f"[{username}] {msg}\n"))
-            print(f"[{username}@{address[0]} NEW MSG] {msg}")
-    connection.close()
+            print(f"[{client_address} NEW MSG] {message}")
+    client_connection.close()
 
-def start():
-    server.listen()
-    print(f"[SERVER] Listening on {ADDR}")
-    while True:
-        conn, addr = server.accept()
-        threading.Thread(target=handle_client, args=(conn, addr)).start()
-        print(f"[SERVER] Active Connections: {threading.activeCount() - 1}")
-
-
-print('[SERVER] the Server is starting...')
-start()
+print(f"[SERVER] Starting...")
+server.listen()
+print(f"[SERVER] Listening on {ADDR}")
+while True:
+    client_conn, client_addr = server.accept()
+    threading.Thread(target=handle_client, args=(client_conn, client_addr)).start()
+    print(f"[SERVER] Active Connections: {threading.activeCount() - 1}")
