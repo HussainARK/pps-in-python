@@ -3,7 +3,6 @@
 
 import socket, threading
 
-FORMAT = "utf-8"
 DISCONNECT_MESSAGE ="!DISCONNECT!"
 HEADER = 2048
 
@@ -24,20 +23,20 @@ def handle_client(connection, address):
 
     connected = True
     while connected:
-        username = connection.recv(HEADER).decode(FORMAT)
-        msg = connection.recv(HEADER).decode(FORMAT)
+        username = connection.recv(HEADER).decode()
+        msg = connection.recv(HEADER).decode()
         if msg == DISCONNECT_MESSAGE:
             connected = False
             with clients_lock:
                 if clients != []:
                     for client in clients:
                         if client:
-                            client.send((f"[{username} DISCONNECTED]" + "\n").encode(FORMAT))
+                            client.send(str.encode(f"[{username} DISCONNECTED]" + "\n"))
             print(f"[{username}@{address[0]}] DISCONNECTED")
         else:
             with clients_lock:
                 for client in clients:
-                    client.send((f"[{username}] {msg}\n").encode(FORMAT))
+                    client.send(str.encode(f"[{username}] {msg}\n"))
             print(f"[{username}@{address[0]} NEW MSG] {msg}")
     connection.close()
 

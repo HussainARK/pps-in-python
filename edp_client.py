@@ -3,7 +3,6 @@
 
 import socket, threading
 
-FORMAT = "utf-8"
 DISCONNECT_MESSAGE ="!DISCONNECT!"
 HEADER = 2048
 
@@ -16,9 +15,9 @@ client.connect(SERVER_ADDR)
 print(f"[CLIENT] CONNECTED TO THE SERVER {SERVER_ADDR}")
 
 def send(msg, sender_name):
-    sender_name = sender_name.encode(FORMAT)
+    sender_name = str.encode(sender_name)
     client.send(sender_name)
-    message = msg.encode(FORMAT)
+    message = str.encode(msg)
     client.send(message)
 
 def get_messages():
