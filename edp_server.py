@@ -6,7 +6,7 @@ import socket, threading, msvcrt
 FORMAT = "utf-8"
 DISCONNECT_MESSAGE ="!DISCONNECT!"
 
-HOST = socket.gethostbyname(socket.gethostname())
+HOST = "127.0.0.1"
 PORT = 5050
 ADDR = (HOST, PORT)
 
@@ -27,7 +27,13 @@ def handle_client(connection, address):
         msg = connection.recv(50).decode(FORMAT)
         if msg == DISCONNECT_MESSAGE:
             connected = False
-            print(f"[{username}@{address[0]}] DISCONNECTED")
+            disconnected_message = f"[{username}@{address[0]}] DISCONNECTED"
+            with clients_lock:
+                if clients != []:
+                    for client in clients:
+                        if client:
+                            client.send((disconnected_message + "\n").encode(FORMAT))
+            print(disconnected_message)
         else:
             listing = f"[{username}@{address[0]} NEW MSG] {msg}"
             with clients_lock:

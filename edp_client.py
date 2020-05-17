@@ -7,7 +7,7 @@ FORMAT = "utf-8"
 DISCONNECT_MESSAGE ="!DISCONNECT!"
 HEADER = 2048
 
-SERVER_HOST = "192.168.0.102"
+SERVER_HOST = '127.0.0.1'
 SERVER_PORT = 5050
 SERVER_ADDR = (SERVER_HOST, SERVER_PORT)
 
@@ -23,30 +23,34 @@ def send(msg, sender_name):
 
 sender = input('Enter your Name: ')
 
-while True:
-    print('''\
-Enter "s" to send a message,
-"d" to disconnect from the server,
-"l" to list live messages
+print('''\
+[CLIENT] Enter "h" for help
 ''')
 
-    user_input = input()
+while True:
+    user_input = input(f"{sender}> ")
     if user_input == "s":
         new_message = input('Message: ')
         send(new_message, sender)
         pass
-    
+
+    elif user_input == "h":
+        print("""\
+[CLIENT] Enter
+    "s" to send a message,
+    "d" to disconnect from the server,
+    "l" to list live messages,
+    "h" for displaying this message
+""")
+
     elif user_input == "d":
         send(DISCONNECT_MESSAGE, sender)
         print(f"[CLIENT] DISCONNECTED to the SERVER {SERVER_ADDR}")
         exit()
     
     elif user_input == "l":
-        continue_listing = True
-        while continue_listing:
-            a_listing = client.recv(HEADER).decode()
-            print(a_listing)
-            input('Press "ENTER" to exit from listing\n')
-            continue_listing = False
+        print("[CLIENT] Getting recent messages...")
+        listings = client.recv(HEADER).decode()
+        print(listings)
     else:
         pass
