@@ -1,10 +1,11 @@
 # Event-Driven Programming
 # # Example, Here we're creating a socket Server that clients can connect to and send messages to each other
 
-import socket, threading, msvcrt
+import socket, threading
 
 FORMAT = "utf-8"
 DISCONNECT_MESSAGE ="!DISCONNECT!"
+HEADER = 2048
 
 HOST = "127.0.0.1"
 PORT = 5050
@@ -23,23 +24,21 @@ def handle_client(connection, address):
 
     connected = True
     while connected:
-        username = connection.recv(50).decode(FORMAT)
-        msg = connection.recv(50).decode(FORMAT)
+        username = connection.recv(HEADER).decode(FORMAT)
+        msg = connection.recv(HEADER).decode(FORMAT)
         if msg == DISCONNECT_MESSAGE:
             connected = False
-            disconnected_message = f"[{username}@{address[0]}] DISCONNECTED"
             with clients_lock:
                 if clients != []:
                     for client in clients:
                         if client:
-                            client.send((disconnected_message + "\n").encode(FORMAT))
-            print(disconnected_message)
+                            client.send((f"[{username} DISCONNECTED]" + "\n").encode(FORMAT))
+            print(f"[{username}@{address[0]}] DISCONNECTED")
         else:
-            listing = f"[{username}@{address[0]} NEW MSG] {msg}"
             with clients_lock:
                 for client in clients:
-                    client.send((listing + "\n").encode(FORMAT))
-            print(listing)
+                    client.send((f"[{username}] {msg}\n").encode(FORMAT))
+            print(f"[{username}@{address[0]} NEW MSG] {msg}")
     connection.close()
 
 def start():

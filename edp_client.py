@@ -1,7 +1,7 @@
 # Event-Driven Programming
 # # Here we're creating the client Script that connects to the Server
 
-import socket
+import socket, threading
 
 FORMAT = "utf-8"
 DISCONNECT_MESSAGE ="!DISCONNECT!"
@@ -21,36 +21,30 @@ def send(msg, sender_name):
     message = msg.encode(FORMAT)
     client.send(message)
 
+def get_messages():
+    messages = client.recv(HEADER).decode()
+    print("\n" + messages)
+
 sender = input('Enter your Name: ')
 
-print('''\
-[CLIENT] Enter "h" for help
-''')
+print(f'\n[CLIENT] to disconnect enter "{DISCONNECT_MESSAGE}" (without quotes)\n')
 
 while True:
-    user_input = input(f"{sender}> ")
-    if user_input == "s":
-        new_message = input('Message: ')
-        send(new_message, sender)
+    threading.Thread(target=get_messages).start()
+    message = input(f"{sender}> ")
+    threading.Thread(target=get_messages).start()
+    if message.strip() == "":
+        threading.Thread(target=get_messages).start()
         pass
-
-    elif user_input == "h":
-        print("""\
-[CLIENT] Enter
-    "s" to send a message,
-    "d" to disconnect from the server,
-    "l" to list live messages,
-    "h" for displaying this message
-""")
-
-    elif user_input == "d":
-        send(DISCONNECT_MESSAGE, sender)
-        print(f"[CLIENT] DISCONNECTED to the SERVER {SERVER_ADDR}")
-        exit()
-    
-    elif user_input == "l":
-        print("[CLIENT] Getting recent messages...")
-        listings = client.recv(HEADER).decode()
-        print(listings)
     else:
-        pass
+        threading.Thread(target=get_messages).start()
+        if message == DISCONNECT_MESSAGE:
+            threading.Thread(target=get_messages).start()
+            send(message, sender)
+            threading.Thread(target=get_messages).start()
+            print(f"[CLIENT] DISCONNECTED to the SERVER {SERVER_ADDR}")
+            threading.Thread(target=get_messages).start()
+            exit()
+        else:
+            threading.Thread(target=get_messages).start()
+            send(message, sender)
